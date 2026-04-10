@@ -39,6 +39,7 @@ export default function Sidebar({ selectedFiles, onScopeChange }) {
   const handleUpload = async (e) => {
     if (!e.target.files?.length) return;
     setIsUploading(true);
+    const uploadedNames = Array.from(e.target.files).map(f => f.name);
     const formData = new FormData();
     for (const file of e.target.files) {
       formData.append('files', file);
@@ -46,6 +47,7 @@ export default function Sidebar({ selectedFiles, onScopeChange }) {
     try {
       await axios.post('http://localhost:8000/api/upload', formData);
       await fetchDocs(); // refresh list actively post-ingest
+      setLocalSelection(prev => [...new Set([...prev, ...uploadedNames])]);
     } catch(err) {
       console.error("Upload explicitly failed:", err);
     } finally {
@@ -68,9 +70,31 @@ export default function Sidebar({ selectedFiles, onScopeChange }) {
   return (
     <div className="w-[340px] h-full flex flex-col p-4 gap-4 glass-panel ml-4 my-4 z-10 relative">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-4 border-b border-zinc-800">
+      <div className="flex items-center gap-3 pb-4 border-b border-zinc-800 shrink-0">
         <BarChart2 className="text-emerald-500" size={24} />
         <h1 className="text-xl font-bold tracking-tight text-white">CIT Hackathon '26</h1>
+      </div>
+
+      {/* Tickers */}
+      <div className="flex flex-col gap-2 relative mt-1 shrink-0">
+        <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold mb-0.5">Target Companies</label>
+        <div className="flex flex-wrap gap-2">
+          {['AAPL', 'MSFT', 'DIS', 'TSLA'].map(ticker => (
+            <span key={ticker} className="px-2.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs font-mono cursor-pointer hover:bg-zinc-700 transition-colors shadow-sm text-zinc-300">
+              {ticker}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Year Range */}
+      <div className="mt-2 flex flex-col gap-1 shrink-0">
+         <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Time Horizon (Years)</label>
+         <div className="flex items-center gap-3 mt-1">
+            <span className="text-xs text-zinc-500 font-mono">2015</span>
+            <input type="range" min="2015" max="2023" className="w-full accent-emerald-500 bg-zinc-800 h-1.5 rounded-full appearance-none outline-none cursor-pointer" />
+            <span className="text-xs text-zinc-500 font-mono">2023</span>
+         </div>
       </div>
 
       {/* Document Context Selector */}

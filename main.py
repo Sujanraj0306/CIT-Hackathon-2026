@@ -63,7 +63,11 @@ def get_budget() -> Dict[str, Any]:
 def get_documents() -> Dict[str, Any]:
     """Return all detected filenames strictly currently available in index."""
     pdf_dir = "./pdfs"
-    files = [f for f in os.listdir(pdf_dir) if f.lower().endswith(".pdf")] if os.path.exists(pdf_dir) else []
+    if os.path.exists(pdf_dir):
+        files = [f for f in os.listdir(pdf_dir) if f.lower().endswith(".pdf")]
+        files.sort(key=lambda x: os.path.getmtime(os.path.join(pdf_dir, x)), reverse=True)
+    else:
+        files = []
     return {"documents": files}
 
 @app.post("/api/upload")
